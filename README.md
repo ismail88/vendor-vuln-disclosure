@@ -1,89 +1,57 @@
 # Vendor Vulnerability Disclosure Prediction
 
-Academic data collection pipeline built for a (Data Mining & Machine Learning) group project. This repository contains the web scraper, methodology documentation, and data collection logic used to build an original dataset for predicting whether B2B SaaS vendors publish a public vulnerability disclosure program.
+Academic data collection pipeline built for a Data Mining & Machine Learning group project. This repository contains the web scraper, methodology documentation, and data collection logic used to build an original dataset for predicting whether B2B SaaS vendors publish a public vulnerability disclosure program.
 
-## Research question
+## Overview
 
-What public-facing business characteristics are associated with a software vendor publishing a security vulnerability disclosure or bug-bounty program?
+The project samples B2B companies from the Y Combinator Startup Directory, then checks each company's website for evidence of a genuine vulnerability-disclosure mechanism (a `security.txt` file, a dedicated security/trust page, or a bug-bounty program), rather than relying on generic security/compliance marketing content. See `docs/METHODOLOGY.md` for the full, dated log of every sampling, labeling, and scraper design decision.
 
-The binary dependent variable, `has_vulnerability_disclosure`, is set to `1` when a vendor has a publicly identifiable vulnerability-disclosure policy, `security.txt` file, or approved bug-bounty program, and `0` otherwise, following a documented, repeatable rubric (see `docs/METHODOLOGY.md`).
+## Repository Structure
 
-## What this scraper does
-
-`scraper/vendor_vuln_disclosure_scraper.py` checks each company's website against a fixed set of common disclosure-related paths (e.g. `/.well-known/security.txt`, `/security`, `/trust-center`, `/bug-bounty`), follows redirects, strips visible text with BeautifulSoup, and classifies matches against a tiered keyword list:
-
-- **Strong keywords** (e.g. `bug bounty`, `hackerone`, `responsible disclosure`, `safe harbor`) qualify a page as a positive on their own.
-- **Weak keywords** (bare `security@` / `vulnerability-disclosure@` contacts) only qualify if genuine disclosure language appears within a 150-character window of the match, to avoid false positives from generic "email us" contact footers.
-- **Compliance-only keywords** (`SOC 2`, `ISO 27001`, `penetration testing`, etc.) are tracked separately and never count as a disclosure positive on their own, since they signal security marketing, not an actual reporting channel.
-
-It also includes structured RFC 9116 parsing for `security.txt` files (checking for `Contact:` / `Expires:` fields directly), automatic HTTP fallback on SSL errors, offsite-redirect handling that updates the base domain mid-scan, and per-company error isolation so a single failure doesn't crash a multi-hour unattended run.
-
-Every design decision, bug found, and fix applied is documented with dates and rationale in `docs/METHODOLOGY.md` (Log Entries 1-16).
+```
+.
+├── docs/
+│   └── METHODOLOGY.md          # Full data collection & methodology log
+├── scraper/
+│   ├── vendor_vuln_disclosure_scraper.py   # Main scraper
+│   ├── triage_positives.py                 # Post-hoc triage helper for results CSVs
+│   └── check_stats.py                      # Quick summary stats for a results CSV
+├── requirements.txt
+└── README.md
+```
 
 ## Setup
 
-```bash
-git clone https://github.com/ismail88/vendor-vuln-disclosure.git
-cd vendor-vuln-disclosure
-python -m venv venv && source venv/bin/activate   # optional but recommended
-pip install -r requirements.txt
-```
+1. Clone the repository.
+2. Create and activate a virtual environment (recommended).
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 
-### Running the scraper
+**Run the scraper** against a CSV containing `company_name` and `website_domain` columns:
+```
+python scraper/vendor_vuln_disclosure_scraper.py input_file.csv
+```
+This auto-generates `input_file_RESULTS.csv`. Use `-o` to specify a custom output filename.
 
-The input CSV must contain `company_name` and `website_domain` columns.
+**Triage the results** to separate trustworthy positives from the small number that still need manual review:
+```
+python scraper/triage_positives.py input_file_RESULTS.csv
+```
+This saves a `*_NEEDS_REVIEW.csv` file containing only the rows that warrant a human look.
 
-```bash
-# Auto-generates output filename (input_file_RESULTS.csv)
-python scraper/vendor_vuln_disclosure_scraper.py data/Team_YC_Vendor_Sample_346.csv
-
-# Specify a custom output filename
-python scraper/vendor_vuln_disclosure_scraper.py data/Team_YC_Vendor_Sample_346.csv -o data/my_results.csv
-
-# Help
-python scraper/vendor_vuln_disclosure_scraper.py -h
+**Check summary stats** for a results CSV:
+```
+python scraper/check_stats.py input_file_RESULTS.csv
 ```
 
-A full run against ~346 companies takes roughly 2-2.5 hours at the default 1.5-second per-request delay (see `docs/METHODOLOGY.md`, Log Entry 15), so it's best run unattended (e.g. with `caffeinate -i` on macOS to prevent sleep).
+## Methodology
 
-### Checking results stats
+Every sampling decision, labeling rubric change, bug fix, and re-validation run is documented with dates and rationale in `docs/METHODOLOGY.md`. This is the authoritative record of how the dataset was built.
 
-Once a run finishes, `scraper/check_stats.py` prints a quick summary of the output CSV — reachable/unreachable counts, candidate-positive rate, offsite-redirect count, compliance-only-page count, and the most frequently matched disclosure keywords. This is the fastest way to sanity-check a new run before starting manual review.
+## AI Assistance Disclosure
 
-```bash
-python scraper/check_stats.py data/Team_YC_Vendor_Sample_346_RESULTS.csv
-```
-
-Compare the printed candidate-positive rate against the Hexiosec security.txt adoption benchmarks documented in `docs/METHODOLOGY.md` (Log Entry 8) — roughly 0.4-5% depending on population — as a first-pass sanity check. A rate far outside that range usually means a keyword or path change introduced new false positives/negatives and is worth a manual spot-check before finalizing the dataset.
-
-## Repository structure
-
-```
-vendor-vuln-disclosure/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── scraper/
-│   ├── vendor_vuln_disclosure_scraper.py
-│   └── check_stats.py            # Quick summary stats for a results CSV
-├── docs/
-│   └── METHODOLOGY.md          # Full data collection & decision log (Entries 1-16)
-└── data/                       # Added locally
-    ├── Manual_Validated_URLs_25.csv
-    ├── Team_YC_Vendor_Sample_346_RESULTS.csv
-    └── review_sheet_346.csv
-```
-
-## Data source & sampling
-
-The sampling frame is the Y Combinator public Startup Directory (accessed via the community-maintained `yc-oss/api` static JSON mirror), filtered to active/acquired/public B2B companies with valid websites, then stratified across founding-year bands and oversampled for Public/Acquired status to avoid a near-all-zero dependent variable. Full rationale is in `docs/METHODOLOGY.md`, Log Entries 1-3.
-
-## Academic integrity note
-
-This is coursework for MIS 545 (University of Arizona). Per the course syllabus, this repository is kept **private** and restricted to team members; it is not intended for public distribution.
-
-## AI assistance disclosure
-
-Per the course's generative AI policy, Perplexity was used to assist with research, data-source identification, sampling logic design, scraper debugging, and documentation drafting throughout the data collection phase. All labeling decisions were manually reviewed against the documented rubric.
+AI tools (Perplexity) were used to assist with research, data-source identification, sampling logic design, scraper development and debugging, and documentation drafting throughout the data collection phase.
