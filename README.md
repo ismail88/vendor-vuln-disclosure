@@ -65,9 +65,6 @@ vendor-vuln-disclosure/
 
 The sampling frame is the Y Combinator public Startup Directory (accessed via the community-maintained `yc-oss/api` static JSON mirror), filtered to active/acquired/public B2B companies with valid websites, then stratified across founding-year bands and oversampled for Public/Acquired status to avoid a near-all-zero dependent variable. Full rationale is in `docs/METHODOLOGY.md`, Log Entries 1-3.
 
-## Academic integrity note
-
-This is coursework for MIS 545 (University of Arizona). Per the course syllabus, this repository is kept **private** and restricted to team members; it is not intended for public distribution.
 
 ## AI assistance disclosure
 
