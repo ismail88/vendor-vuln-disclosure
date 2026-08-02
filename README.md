@@ -31,6 +31,8 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Running the scraper
+
 The input CSV must contain `company_name` and `website_domain` columns.
 
 ```bash
@@ -44,6 +46,18 @@ python scraper/vendor_vuln_disclosure_scraper.py data/Team_YC_Vendor_Sample_346.
 python scraper/vendor_vuln_disclosure_scraper.py -h
 ```
 
+A full run against ~346 companies takes roughly 2-2.5 hours at the default 1.5-second per-request delay (see `docs/METHODOLOGY.md`, Log Entry 15), so it's best run unattended (e.g. with `caffeinate -i` on macOS to prevent sleep).
+
+### Checking results stats
+
+Once a run finishes, `scraper/check_stats.py` prints a quick summary of the output CSV — reachable/unreachable counts, candidate-positive rate, offsite-redirect count, compliance-only-page count, and the most frequently matched disclosure keywords. This is the fastest way to sanity-check a new run before starting manual review.
+
+```bash
+python scraper/check_stats.py data/Team_YC_Vendor_Sample_346_RESULTS.csv
+```
+
+Compare the printed candidate-positive rate against the Hexiosec security.txt adoption benchmarks documented in `docs/METHODOLOGY.md` (Log Entry 8) — roughly 0.4-5% depending on population — as a first-pass sanity check. A rate far outside that range usually means a keyword or path change introduced new false positives/negatives and is worth a manual spot-check before finalizing the dataset.
+
 ## Repository structure
 
 ```
@@ -52,7 +66,8 @@ vendor-vuln-disclosure/
 ├── requirements.txt
 ├── .gitignore
 ├── scraper/
-│   └── vendor_vuln_disclosure_scraper.py
+│   ├── vendor_vuln_disclosure_scraper.py
+│   └── check_stats.py            # Quick summary stats for a results CSV
 ├── docs/
 │   └── METHODOLOGY.md          # Full data collection & decision log (Entries 1-16)
 └── data/                       # Added locally
@@ -65,6 +80,9 @@ vendor-vuln-disclosure/
 
 The sampling frame is the Y Combinator public Startup Directory (accessed via the community-maintained `yc-oss/api` static JSON mirror), filtered to active/acquired/public B2B companies with valid websites, then stratified across founding-year bands and oversampled for Public/Acquired status to avoid a near-all-zero dependent variable. Full rationale is in `docs/METHODOLOGY.md`, Log Entries 1-3.
 
+## Academic integrity note
+
+This is coursework for MIS 545 (University of Arizona). Per the course syllabus, this repository is kept **private** and restricted to team members; it is not intended for public distribution.
 
 ## AI assistance disclosure
 
