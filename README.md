@@ -1,6 +1,6 @@
 # Vendor Vulnerability Disclosure Prediction
 
-Academic data collection pipeline built for an MIS 545 (Data Mining & Machine Learning) group project. This repository contains the web scraper, methodology documentation, and data collection logic used to build an original dataset for predicting whether B2B SaaS vendors publish a public vulnerability disclosure program.
+Academic data collection pipeline built for a (Data Mining & Machine Learning) group project. This repository contains the web scraper, methodology documentation, and data collection logic used to build an original dataset for predicting whether B2B SaaS vendors publish a public vulnerability disclosure program.
 
 ## Research question
 
