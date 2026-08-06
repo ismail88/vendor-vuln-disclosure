@@ -22,7 +22,7 @@ The project samples B2B companies from the Y Combinator Startup Directory, then 
 
 ## Requirements
 
-- Python 3.9 or later
+- Python 3.7 or later
 - pip (bundled with Python)
 - A working internet connection (the scraper makes live HTTP requests to each target domain)
 
