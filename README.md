@@ -20,10 +20,40 @@ The project samples B2B companies from the Y Combinator Startup Directory, then 
 └── README.md
 ```
 
+## Requirements
+
+- Python 3.9 or later
+- pip (bundled with Python)
+- A working internet connection (the scraper makes live HTTP requests to each target domain)
+
+**If you don't already have Python installed:**
+
+- **macOS:** Install [Homebrew](https://brew.sh) first if you don't have it, then run:
+  ```
+  brew install python
+  ```
+  This installs a current Python 3 alongside pip. Verify with `python3 --version`.
+- **Windows:** Download the installer from [python.org/downloads](https://www.python.org/downloads/) and make sure to check "Add python.exe to PATH" during setup. Alternatively, install via `winget install Python.Python.3.12`.
+- **Linux (Debian/Ubuntu):**
+  ```
+  sudo apt update && sudo apt install python3 python3-pip python3-venv
+  ```
+- **Linux (Fedora):**
+  ```
+  sudo dnf install python3 python3-pip
+  ```
+
+On macOS and Linux, the Python 3 binary is typically invoked as `python3` (not `python`) unless you've aliased it.
+
 ## Setup
 
 1. Clone the repository.
-2. Create and activate a virtual environment (recommended).
+2. Create and activate a virtual environment (recommended):
+   ```
+   python3 -m venv venv
+   source venv/bin/activate   # macOS/Linux
+   venv\Scripts\activate      # Windows
+   ```
 3. Install dependencies:
    ```
    pip install -r requirements.txt
